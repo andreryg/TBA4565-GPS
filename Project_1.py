@@ -1,29 +1,33 @@
 import numpy as np
 from scipy.constants import speed_of_light
-
+from itertools import compress
 
 class GPS(object):
-    t = 129600
+    t = 558000
     we = 7.2921151467 * 10**-5
     GM = 3.986005 * 10**14
 
-    def __init__(self, toe, sqrta, e, M0, w, i0, lambda0, deltan, i, omega, cuc, cus, crc, crs, cic, cis):
-        self.toe = toe
-        self.sqrta = sqrta
-        self.e = e
-        self.M0 = M0
-        self.w = w
-        self.i0 = i0
-        self.lambda0 = lambda0
-        self.deltan = deltan
-        self.i = i
-        self.omega = omega
-        self.cuc = cuc
-        self.cus = cus
-        self.crc = crc
-        self.crs = crs
-        self.cic = cic
-        self.cis = cis
+    def __init__(self, p):
+        self.toe = p[7]
+        self.sqrta = p[6]
+        self.e = p[4]
+        self.M0 = p[2]
+        self.w = p[13]
+        self.i0 = p[11]
+        self.lambda0 = p[9]
+        self.deltan = p[1]
+        self.i = p[15]
+        self.omega = p[14]
+        self.cuc = p[3]
+        self.cus = p[5]
+        self.crc = p[12]
+        self.crs = p[0]
+        self.cic = p[8]
+        self.cis = p[10]
+        self.P = p[16]
+        self.dt = p[17]
+        self.dion = p[18]
+        self.dtrop = p[19]
 
     def disregard_corrections(self):
         self.deltan, self.i, self.omega, self.cuc, self.cus, self.crc, self.crs, self.cic, self.cis = [eval(i) for i in ["0"]*9]
@@ -100,24 +104,29 @@ def main():
     for i in range(0, 7):
         lines[i] += ''.join(lines[i+1:i+8])
         del lines[i+1:i+8]
+    relevant_values = [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0]
     for i,v in enumerate(lines):
-        print(i,v)
+        v = list(compress(v.split(), relevant_values))
+        lines[i] = [float(x.replace('D', 'E')) for x in v]
     #Task 1
-    SV06 = GPS(1.295840*10**5, 5.153618*10**3, 5.747278*10**-3, -2.941505, -1.770838, 9.332837*10**-1, 2.123898, 5.243075*10**-9, -6.853856*10**-10, -8.116052*10**-9, -1.184642*10**-6, 7.672235*10**-6, 2.146562*10**2, -2.140625*10**1, 2.980232*10**-8, -1.117587*10**-8)
-    SV10 = GPS(1.296*10**5, 5.153730*10**3, 7.258582*10**-3, 4.044839*10**-1, 4.344642*10**-1, 9.71311*10**-1, -2.006987, 4.442685*10**-9, 2.521533*10**-10, -8.495353*10**-9, 4.714354*10**-6, -1.825392*10**-7, 3.868750*10**2, 8.978125*10**1, 3.725290*10**-9, 8.940696*10**-8)
-    SN16 = GPS(1.296*10**5, 5.153541*10**3, 3.506405*10**-3, 1.808249, -7.60081*10**-1, 9.624682*10**-1, 1.122991, 4.937348*10**-9, 2.367955*10**-10, -8.054621*10**-9, 9.49949*10**-7, 5.437061*10**-6, 2.709062*10**2, 1.515625*10**1, 6.332993*10**-8, -2.421438*10**-8)
-    SV21 = GPS(1.29584*10**5, 5.153681*10**3, 1.179106*10**-2, 3.122437, -2.904128, 9.416507*10**-1, -3.042819, 4.445542*10**-9, -4.035882*10**-11, -7.757823*10**-9, 6.897374*10**-6, 1.069344*10**-5, 1.630625*10**2, 1.329375*10**2, -1.080334*10**-7, -8.009374*10**-8)
+    SV08 = GPS(lines[0]+[22550792.660, 0.00013345632, 3.344, 4.055])
+    SV10 = GPS(lines[1]+[22612136.900, 0.00004615571, 2.947, 4.297])
+    SV21 = GPS(lines[2]+[20754631.240, -0.00015182034, 2.505, 2.421])
+    SV24 = GPS(lines[3]+[23974471.500, 0.00026587520, 3.644, 9.055])
+    SV17 = GPS(lines[4]+[24380357.760, -0.00072144074, 6.786, 9.756])
+    SV03 = GPS(lines[5]+[24444143.500, 0.00022187057, 4.807, 10.863])
+    SN14 = GPS(lines[6]+[22891323.280, -0.00013020719, 4.598, 4.997])
 
-
-
-
-    SV06.calculateXYZ()
+    SV08.calculateXYZ()
     SV10.calculateXYZ()
-    SN16.calculateXYZ()
     SV21.calculateXYZ()
-    print(SV06.X, SV06.Y, SV06.Z)
+    SV24.calculateXYZ()
+    SV17.calculateXYZ()
+    SV03.calculateXYZ()
+    SN14.calculateXYZ()
+    print(SV08.X, SV08.Y, SV08.Z)
     print(SV10.X, SV10.Y, SV10.Z)
-    print(SN16.X, SN16.Y, SN16.Z)
+    print("ANSWER", SV03.X, SV03.Y, SV03.Z)
     print(SV21.X, SV21.Y, SV21.Z)
 
     #Task 2
@@ -136,40 +145,48 @@ def main():
 
 
     #Task 3
-    lat = np.deg2rad(47.1)
-    long = np.deg2rad(15.5)
+    lat = np.deg2rad(63.2)
+    long = np.deg2rad(10.2)
     a, b, h = 6378137, 6356752.3141, 400
     Xr, Yr, Zr = np.array([(N(lat)+h)*np.cos(lat)*np.cos(long), (N(lat)+h)*np.cos(lat)*np.sin(long), ((b**2/a**2)*N(lat)+h)*np.sin(lat)])
 
-    print(Xr, Yr, Zr)
+    print("XYZ: ",Xr, Yr, Zr)
 
     #Task 4
-    PSV06, PSV10, PSN16, PSV21 = 20509078.908, 23568574.070, 23733776.587, 22106790.995
     for i in range(10):
-        SV06.set_rho(Xr, Yr, Zr)
+        SV08.set_rho(Xr, Yr, Zr)
         SV10.set_rho(Xr, Yr, Zr)
-        SN16.set_rho(Xr, Yr, Zr)
         SV21.set_rho(Xr, Yr, Zr)
+        SV24.set_rho(Xr, Yr, Zr)
+        SV17.set_rho(Xr, Yr, Zr)
+        SV03.set_rho(Xr, Yr, Zr)
+        SN14.set_rho(Xr, Yr, Zr)
         
         A = np.array([
-            [-(SV06.X-Xr)/SV06.rho, -(SV06.Y-Yr)/SV06.rho, -(SV06.Z-Zr)/SV06.rho, -speed_of_light],
+            [-(SV08.X-Xr)/SV08.rho, -(SV08.Y-Yr)/SV08.rho, -(SV08.Z-Zr)/SV08.rho, -speed_of_light],
             [-(SV10.X-Xr)/SV10.rho, -(SV10.Y-Yr)/SV10.rho, -(SV10.Z-Zr)/SV10.rho, -speed_of_light],
-            [-(SN16.X-Xr)/SN16.rho, -(SN16.Y-Yr)/SN16.rho, -(SN16.Z-Zr)/SN16.rho, -speed_of_light],
             [-(SV21.X-Xr)/SV21.rho, -(SV21.Y-Yr)/SV21.rho, -(SV21.Z-Zr)/SV21.rho, -speed_of_light],
+            [-(SV24.X-Xr)/SV24.rho, -(SV24.Y-Yr)/SV24.rho, -(SV24.Z-Zr)/SV24.rho, -speed_of_light],
+            [-(SV17.X-Xr)/SV17.rho, -(SV17.Y-Yr)/SV17.rho, -(SV17.Z-Zr)/SV17.rho, -speed_of_light],
+            [-(SV03.X-Xr)/SV03.rho, -(SV03.Y-Yr)/SV03.rho, -(SV03.Z-Zr)/SV03.rho, -speed_of_light],
+            [-(SN14.X-Xr)/SN14.rho, -(SN14.Y-Yr)/SN14.rho, -(SN14.Z-Zr)/SN14.rho, -speed_of_light]
         ])
         L = np.array([
-            [PSV06 - SV06.rho],
-            [PSV10 - SV10.rho],
-            [PSN16 - SN16.rho],
-            [PSV21 - SV21.rho]
+            [SV08.P - SV08.rho - speed_of_light*SV08.dt - SV08.dion - SV08.dtrop],
+            [SV10.P - SV10.rho - speed_of_light*SV10.dt - SV10.dion - SV10.dtrop],
+            [SV21.P - SV21.rho - speed_of_light*SV21.dt - SV21.dion - SV21.dtrop],
+            [SV24.P - SV24.rho - speed_of_light*SV24.dt - SV24.dion - SV24.dtrop],
+            [SV17.P - SV17.rho - speed_of_light*SV17.dt - SV17.dion - SV17.dtrop],
+            [SV03.P - SV03.rho - speed_of_light*SV03.dt - SV03.dion - SV03.dtrop],
+            [SN14.P - SN14.rho - speed_of_light*SN14.dt - SN14.dion - SN14.dtrop]
         ])
         
-        dXr, dYr, dZr, dTr = np.linalg.inv(A)@L
+        dXr, dYr, dZr, dTr = np.linalg.inv(A.T@A)@A.T@L
         Xr += float(dXr)
         Yr += float(dYr)
         Zr += float(dZr)
 
-    print(Xr, Yr, Zr)
+    print("XYZ: ", Xr, Yr, Zr)
     print("dTr", dTr)
 
     #Task 5

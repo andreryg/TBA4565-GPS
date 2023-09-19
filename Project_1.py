@@ -115,6 +115,19 @@ def main():
     SV24 = GPS(lines[3]+[23974471.500, 0.00026587520, 3.644, 9.055])
     SV17 = GPS(lines[4]+[24380357.760, -0.00072144074, 6.786, 9.756])
     SV03 = GPS(lines[5]+[24444143.500, 0.00022187057, 4.807, 10.863])
+    """SV03.sqrta = 5153.627956
+    SV03.e = 0.005056695663
+    SV03.M0 = -0.414860583
+    SV03.w = 1.070620602
+    SV03.i0 = 0.9798129497
+    SV03.lambda0 = 2.420706131
+    SV03.deltan = 4.415183910e-09
+    SV03.i = -1.15719105e-10
+    SV03.omega = -8.29820279e-09
+    SV03.cuc = -6.78002834e-07
+    SV03.cus = 3.432855010e-06
+    SV03.cic = -4.47034835e-08
+    SV03.cis = 4.470348358e-08"""
     SN14 = GPS(lines[6]+[22891323.280, -0.00013020719, 4.598, 4.997])
 
     SV08.calculateXYZ()
@@ -127,11 +140,15 @@ def main():
     print(SV08.X, SV08.Y, SV08.Z)
     print(SV10.X, SV10.Y, SV10.Z)
     print("ANSWER", SV03.X, SV03.Y, SV03.Z)
+    print("DIFFERENCE: ", SV03.X-23098357.933, SV03.Y+12669549.861, SV03.Z-2685880.943)
     print(SV21.X, SV21.Y, SV21.Z)
 
-    #Task 2
-    """ SV06.disregard_corrections()
-    SV06.calculateXYZ()
+    #Task 2  
+    """SV03.disregard_corrections()
+    SV03.calculateXYZ()
+    print("ANSWER", SV03.X, SV03.Y, SV03.Z)
+    print("DIFFERENCE: ", SV03.X-23098357.933, SV03.Y+12669549.861, SV03.Z-2685880.943)"""
+    """
     SV10.disregard_corrections()
     SV10.calculateXYZ()
     SN16.disregard_corrections()
@@ -141,13 +158,14 @@ def main():
     print(SV06.X, SV06.Y, SV06.Z)
     print(SV10.X, SV10.Y, SV10.Z)
     print(SN16.X, SN16.Y, SN16.Z)
-    print(SV21.X, SV21.Y, SV21.Z) """
+    print(SV21.X, SV21.Y, SV21.Z)"""
 
 
     #Task 3
     lat = np.deg2rad(63.2)
     long = np.deg2rad(10.2)
-    a, b, h = 6378137, 6356752.3141, 400
+    h = 100
+    a, b = 6378137, 6356752.3141
     Xr, Yr, Zr = np.array([(N(lat)+h)*np.cos(lat)*np.cos(long), (N(lat)+h)*np.cos(lat)*np.sin(long), ((b**2/a**2)*N(lat)+h)*np.sin(lat)])
 
     print("XYZ: ",Xr, Yr, Zr)

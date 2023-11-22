@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.constants import speed_of_light
+import math
 
 class satellite(object):
     def __init__(self, coordinates_A, carrier_phase_A, coordinates_B, carrier_phase_B):
@@ -65,6 +66,17 @@ def main():
     print(A_X, A_Y, A_Z)
     print(B_X, B_Y, B_Z)
 
+    P = 1/(10*0.002**2) * np.array([
+        [4,-1,-1,-1,0,0,0,0],
+        [-1,4,-1,-1,0,0,0,0],
+        [-1,-1,4,-1,0,0,0,0],
+        [-1,-1,-1,4,0,0,0,0],
+        [0,0,0,0,4,-1,-1,-1],
+        [0,0,0,0,-1,4,-1,-1],
+        [0,0,0,0,-1,-1,4,-1],
+        [0,0,0,0,-1,-1,-1,4]
+    ])
+
     #TASK 2
     f = 1575.42 * 10**6
     wavelength = speed_of_light/f
@@ -110,41 +122,37 @@ def main():
             [wavelength * phi(AB174_t2, AB154_t2) - AB174_t2.rho_B + AB154_t2.rho_B + AB174_t2.rho_A - AB154_t2.rho_A],
             [wavelength * phi(AB181_t2, AB154_t2) - AB181_t2.rho_B + AB154_t2.rho_B + AB181_t2.rho_A - AB154_t2.rho_A]
         ])
-        dB_X, dB_Y, dB_Z, dN1, dN2, dN3, dN4 = np.linalg.inv(A.T@A)@A.T@deltaL
+        dB_X, dB_Y, dB_Z, dN1, dN2, dN3, dN4 = np.linalg.inv(A.T@P@A)@A.T@P@deltaL
+        deltaX = np.array([
+            [dB_X, dB_Y, dB_Z, dN1, dN2, dN3, dN4]
+        ])
+        #print(deltaX)
         #print(dB_X, dB_Y, dB_Z, dN1, dN2, dN3, dN4)
         #print(np.rad2deg(np.arctan(B_Y/B_X)))
         B_X += float(dB_X)
         B_Y += float(dB_Y)
         B_Z += float(dB_Z)
         
-        """N1 += float(dN1)
-        N2 += float(dN2)
-        N3 += float(dN3)
-        N4 += float(dN4)
-        N5 += float(dN1)
-        N6 += float(dN2)
-        N7 += float(dN3)
-        N8 += float(dN4)"""
     print(A_X, B_X, A_Y, B_Y, A_Z, B_Z)
     print(dN1, dN2, dN3, dN4)
-    """x = np.array([
-        [dX_B],
-        [dY_B],
-        [dZ_B],
-        [AB155_t1.carrier_phase_B - AB154_t1.carrier_phase_B - AB155_t1.carrier_phase_A + AB154_t1.carrier_phase_A],
-        [AB159_t1.carrier_phase_B - AB154_t1.carrier_phase_B - AB159_t1.carrier_phase_A + AB154_t1.carrier_phase_A],
-        [AB174_t1.carrier_phase_B - AB154_t1.carrier_phase_B - AB174_t1.carrier_phase_A + AB154_t1.carrier_phase_A],
-        [AB181_t1.carrier_phase_B - AB154_t1.carrier_phase_B - AB181_t1.carrier_phase_A + AB154_t1.carrier_phase_A]
-    ]) """ 
+    #print(np.cov(A))
+    
 
-    #FJERN
+    Qx = np.linalg.inv(A.T@P@A)
+    print(np.diag(Qx))
+    f2 = lambda x: np.sqrt(x)
+    dank = f2(np.diag(Qx))
+    print("ddd", dank)
+    
+
+    """#FJERN
     a_=6378137
     b_=6356752.3141
     e = (a_**2-b_**2)/a_**2
     print("e", e)
     B_long = np.rad2deg(np.arctan(B_Y/B_X)+np.pi)
     B_lat, B_h = geodetic_iteration(B_X, B_Y, B_Z, e)
-    print(B_lat, B_long, B_h)
+    print(B_lat, B_long, B_h)"""
 
     #TASK 3
     for xdd in range(10):
@@ -175,7 +183,7 @@ def main():
             wavelength * phi(AB181_t2, AB154_t2) - AB181_t2.rho_B + AB154_t2.rho_B + AB181_t2.rho_A - AB154_t2.rho_A - wavelength * dN4[0]
         ])
         #print(AB154_t1.rho_B)
-        dB_X, dB_Y, dB_Z = np.linalg.inv(A.T@A)@A.T@deltaL
+        dB_X, dB_Y, dB_Z = np.linalg.inv(A.T@P@A)@A.T@P@deltaL
         #print(dB_X, dB_Y, dB_Z)
         B_X += float(dB_X)
         B_Y += float(dB_Y)
@@ -205,6 +213,174 @@ def main():
     B_long = np.rad2deg(np.arctan(B_Y/B_X)+np.pi)
     B_lat, B_h = geodetic_iteration(B_X, B_Y, B_Z, e)
     print(B_lat, B_long, B_h)
+
+    Qx = np.linalg.inv(A.T@P@A)
+    print(np.diag(Qx))
+    f2 = lambda x: np.sqrt(x)
+    dank2 = f2(np.diag(Qx))
+    print(dank2)
+
+    for xdd in range(10):
+        #print(B_X, B_Y, B_Z)
+        for s in satellites:
+            s.set_rho_A(A_X, A_Y, A_Z)
+            s.set_rho_B(B_X, B_Y, B_Z)
+
+        A = np.array([
+            a(AB155_t1, AB154_t1, [B_X, B_Y, B_Z]),
+            a(AB159_t1, AB154_t1, [B_X, B_Y, B_Z]),
+            a(AB174_t1, AB154_t1, [B_X, B_Y, B_Z]),
+            a(AB181_t1, AB154_t1, [B_X, B_Y, B_Z]),
+            a(AB155_t2, AB154_t2, [B_X, B_Y, B_Z]),
+            a(AB159_t2, AB154_t2, [B_X, B_Y, B_Z]),
+            a(AB174_t2, AB154_t2, [B_X, B_Y, B_Z]),
+            a(AB181_t2, AB154_t2, [B_X, B_Y, B_Z])
+        ])
+        #print(A[0])
+        deltaL = np.array([
+            wavelength * phi(AB155_t1, AB154_t1) - AB155_t1.rho_B + AB154_t1.rho_B + AB155_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN1[0]),
+            wavelength * phi(AB159_t1, AB154_t1) - AB159_t1.rho_B + AB154_t1.rho_B + AB159_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN2[0]),
+            wavelength * phi(AB174_t1, AB154_t1) - AB174_t1.rho_B + AB154_t1.rho_B + AB174_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN3[0]),
+            wavelength * phi(AB181_t1, AB154_t1) - AB181_t1.rho_B + AB154_t1.rho_B + AB181_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN4[0]),
+            wavelength * phi(AB155_t2, AB154_t2) - AB155_t2.rho_B + AB154_t2.rho_B + AB155_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN1[0]),
+            wavelength * phi(AB159_t2, AB154_t2) - AB159_t2.rho_B + AB154_t2.rho_B + AB159_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN2[0]),
+            wavelength * phi(AB174_t2, AB154_t2) - AB174_t2.rho_B + AB154_t2.rho_B + AB174_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN3[0]),
+            wavelength * phi(AB181_t2, AB154_t2) - AB181_t2.rho_B + AB154_t2.rho_B + AB181_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN4[0])
+        ])
+        #print(AB154_t1.rho_B)
+        dB_X, dB_Y, dB_Z = np.linalg.inv(A.T@P@A)@A.T@P@deltaL
+        #print(dB_X, dB_Y, dB_Z)
+        B_X += float(dB_X)
+        B_Y += float(dB_Y)
+        B_Z += float(dB_Z)
+        """N1 += float(dN1)
+        N2 += float(dN2)
+        N3 += float(dN3)
+        N4 += float(dN4)
+        N5 += float(dN1)
+        N6 += float(dN2)
+        N7 += float(dN3)
+        N8 += float(dN4)"""
+    print(A_X, B_X, A_Y, B_Y, A_Z, B_Z)
+    """x = np.array([
+        [dX_B],
+        [dY_B],
+        [dZ_B],
+        [AB155_t1.carrier_phase_B - AB154_t1.carrier_phase_B - AB155_t1.carrier_phase_A + AB154_t1.carrier_phase_A],
+        [AB159_t1.carrier_phase_B - AB154_t1.carrier_phase_B - AB159_t1.carrier_phase_A + AB154_t1.carrier_phase_A],
+        [AB174_t1.carrier_phase_B - AB154_t1.carrier_phase_B - AB174_t1.carrier_phase_A + AB154_t1.carrier_phase_A],
+        [AB181_t1.carrier_phase_B - AB154_t1.carrier_phase_B - AB181_t1.carrier_phase_A + AB154_t1.carrier_phase_A]
+    ]) """ 
+
+    a_=6378137
+    b_=6356752.3141
+    e = (a_**2-b_**2)/a_**2
+    B_long = np.rad2deg(np.arctan(B_Y/B_X)+np.pi)
+    B_lat, B_h = geodetic_iteration(B_X, B_Y, B_Z, e)
+    print(B_lat, B_long, B_h)
+
+    h_values = []
+    other = []
+    
+    for i in range(math.ceil(dank[3])+1):
+        for j in range(math.ceil(dank[4])+1):
+            for k in range(math.ceil(dank[5])+1):
+                for l in range(math.ceil(dank[6])+1):
+                    for xdd in range(10):
+                        #print(B_X, B_Y, B_Z)
+                        for s in satellites:
+                            s.set_rho_A(A_X, A_Y, A_Z)
+                            s.set_rho_B(B_X, B_Y, B_Z)
+
+                        A = np.array([
+                            a(AB155_t1, AB154_t1, [B_X, B_Y, B_Z]),
+                            a(AB159_t1, AB154_t1, [B_X, B_Y, B_Z]),
+                            a(AB174_t1, AB154_t1, [B_X, B_Y, B_Z]),
+                            a(AB181_t1, AB154_t1, [B_X, B_Y, B_Z]),
+                            a(AB155_t2, AB154_t2, [B_X, B_Y, B_Z]),
+                            a(AB159_t2, AB154_t2, [B_X, B_Y, B_Z]),
+                            a(AB174_t2, AB154_t2, [B_X, B_Y, B_Z]),
+                            a(AB181_t2, AB154_t2, [B_X, B_Y, B_Z])
+                        ])
+                        #print(A[0])
+                        deltaL = np.array([
+                            wavelength * phi(AB155_t1, AB154_t1) - AB155_t1.rho_B + AB154_t1.rho_B + AB155_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN1[0])+i,
+                            wavelength * phi(AB159_t1, AB154_t1) - AB159_t1.rho_B + AB154_t1.rho_B + AB159_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN2[0])+j,
+                            wavelength * phi(AB174_t1, AB154_t1) - AB174_t1.rho_B + AB154_t1.rho_B + AB174_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN3[0])+k,
+                            wavelength * phi(AB181_t1, AB154_t1) - AB181_t1.rho_B + AB154_t1.rho_B + AB181_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN4[0])+l,
+                            wavelength * phi(AB155_t2, AB154_t2) - AB155_t2.rho_B + AB154_t2.rho_B + AB155_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN1[0])+i,
+                            wavelength * phi(AB159_t2, AB154_t2) - AB159_t2.rho_B + AB154_t2.rho_B + AB159_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN2[0])+j,
+                            wavelength * phi(AB174_t2, AB154_t2) - AB174_t2.rho_B + AB154_t2.rho_B + AB174_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN3[0])+k,
+                            wavelength * phi(AB181_t2, AB154_t2) - AB181_t2.rho_B + AB154_t2.rho_B + AB181_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN4[0])+l
+                        ])
+                        #print(AB154_t1.rho_B)
+                        dB_X, dB_Y, dB_Z = np.linalg.inv(A.T@P@A)@A.T@P@deltaL
+                        #print(dB_X, dB_Y, dB_Z)
+                        B_X += float(dB_X)
+                        B_Y += float(dB_Y)
+                        B_Z += float(dB_Z)
+                        
+                    print("m", B_X, B_Y, B_Z)
+                    
+
+                    a_=6378137
+                    b_=6356752.3141
+                    e = (a_**2-b_**2)/a_**2
+                    B_long = np.rad2deg(np.arctan(B_Y/B_X)+np.pi)
+                    B_lat, B_h = geodetic_iteration(B_X, B_Y, B_Z, e)
+                    #print(B_lat, B_long, B_h)
+                    h_values.append(B_h)
+                    other.append([round(dN1[0])+i,round(dN2[0])+j,round(dN3[0])+k,round(dN4[0])+l])
+
+                    for xdd in range(10):
+                        #print(B_X, B_Y, B_Z)
+                        for s in satellites:
+                            s.set_rho_A(A_X, A_Y, A_Z)
+                            s.set_rho_B(B_X, B_Y, B_Z)
+
+                        A = np.array([
+                            a(AB155_t1, AB154_t1, [B_X, B_Y, B_Z]),
+                            a(AB159_t1, AB154_t1, [B_X, B_Y, B_Z]),
+                            a(AB174_t1, AB154_t1, [B_X, B_Y, B_Z]),
+                            a(AB181_t1, AB154_t1, [B_X, B_Y, B_Z]),
+                            a(AB155_t2, AB154_t2, [B_X, B_Y, B_Z]),
+                            a(AB159_t2, AB154_t2, [B_X, B_Y, B_Z]),
+                            a(AB174_t2, AB154_t2, [B_X, B_Y, B_Z]),
+                            a(AB181_t2, AB154_t2, [B_X, B_Y, B_Z])
+                        ])
+                        #print(A[0])
+                        deltaL = np.array([
+                            wavelength * phi(AB155_t1, AB154_t1) - AB155_t1.rho_B + AB154_t1.rho_B + AB155_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN1[0])-i,
+                            wavelength * phi(AB159_t1, AB154_t1) - AB159_t1.rho_B + AB154_t1.rho_B + AB159_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN2[0])-j,
+                            wavelength * phi(AB174_t1, AB154_t1) - AB174_t1.rho_B + AB154_t1.rho_B + AB174_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN3[0])-k,
+                            wavelength * phi(AB181_t1, AB154_t1) - AB181_t1.rho_B + AB154_t1.rho_B + AB181_t1.rho_A - AB154_t1.rho_A - wavelength * round(dN4[0])-l,
+                            wavelength * phi(AB155_t2, AB154_t2) - AB155_t2.rho_B + AB154_t2.rho_B + AB155_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN1[0])-i,
+                            wavelength * phi(AB159_t2, AB154_t2) - AB159_t2.rho_B + AB154_t2.rho_B + AB159_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN2[0])-j,
+                            wavelength * phi(AB174_t2, AB154_t2) - AB174_t2.rho_B + AB154_t2.rho_B + AB174_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN3[0])-k,
+                            wavelength * phi(AB181_t2, AB154_t2) - AB181_t2.rho_B + AB154_t2.rho_B + AB181_t2.rho_A - AB154_t2.rho_A - wavelength * round(dN4[0])-l
+                        ])
+                        #print(AB154_t1.rho_B)
+                        dB_X, dB_Y, dB_Z = np.linalg.inv(A.T@P@A)@A.T@P@deltaL
+                        #print(dB_X, dB_Y, dB_Z)
+                        B_X += float(dB_X)
+                        B_Y += float(dB_Y)
+                        B_Z += float(dB_Z)
+                    
+                    #print(A_X, B_X, A_Y, B_Y, A_Z, B_Z)
+                    
+
+                    a_=6378137
+                    b_=6356752.3141
+                    e = (a_**2-b_**2)/a_**2
+                    B_long = np.rad2deg(np.arctan(B_Y/B_X)+np.pi)
+                    B_lat, B_h = geodetic_iteration(B_X, B_Y, B_Z, e)
+                    #print(B_lat, B_long, B_h)
+                    h_values.append(B_h)
+                    other.append([round(dN1[0])-i,round(dN2[0])-j,round(dN3[0])-k,round(dN4[0])-l])
+
+    print(np.array(h_values) - 23.787)
+    print(h_values)
+    
     
 
 if __name__=="__main__":

@@ -29,6 +29,8 @@ class GPS(object):
         self.dion = p[18]
         self.dtrop = p[19]
 
+        self.t = self.t-(self.P/speed_of_light)+self.dt
+
     def disregard_corrections(self):
         self.deltan, self.i, self.omega, self.cuc, self.cus, self.crc, self.crs, self.cic, self.cis = [eval(i) for i in ["0"]*9]
         return True
@@ -126,6 +128,11 @@ def main():
     SN14.calculateXYZ()
     print(SV08.X, SV08.Y, SV08.Z)
     print(SV10.X, SV10.Y, SV10.Z)
+    print(SV21.X, SV21.Y, SV21.Z)
+    print(SV24.X, SV24.Y, SV24.Z)
+    print(SV17.X, SV17.Y, SV17.Z)
+    print(SV03.X, SV03.Y, SV03.Z)
+    print(SN14.X, SN14.Y, SN14.Z)
     print("ANSWER", SV03.X, SV03.Y, SV03.Z)
     print("DIFFERENCE: ", SV03.X-23098418.6200952, SV03.Y+12669381.2111253, SV03.Z-2686141.36110425)
     print(SV21.X, SV21.Y, SV21.Z)
@@ -134,18 +141,19 @@ def main():
     """SV03.disregard_corrections()
     SV03.calculateXYZ()
     print("ANSWER", SV03.X, SV03.Y, SV03.Z)
-    print("DIFFERENCE: ", SV03.X-23098357.933, SV03.Y+12669549.861, SV03.Z-2685880.943)"""
-    """
+    print("DIFFERENCE: ", SV03.X-23098357.933, SV03.Y+12669549.861, SV03.Z-2685880.943)
     SV10.disregard_corrections()
     SV10.calculateXYZ()
-    SN16.disregard_corrections()
-    SN16.calculateXYZ()
+    
     SV21.disregard_corrections()
     SV21.calculateXYZ() 
-    print(SV06.X, SV06.Y, SV06.Z)
+    print(SV08.X, SV08.Y, SV08.Z)
     print(SV10.X, SV10.Y, SV10.Z)
-    print(SN16.X, SN16.Y, SN16.Z)
-    print(SV21.X, SV21.Y, SV21.Z)"""
+    print(SV21.X, SV21.Y, SV21.Z)
+    print(SV24.X, SV24.Y, SV24.Z)
+    print(SV17.X, SV17.Y, SV17.Z)
+    print(SV03.X, SV03.Y, SV03.Z)
+    print(SN14.X, SN14.Y, SN14.Z)"""
 
 
     #Task 3
